@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react'
 import type { FormData } from './types'
-import { CrowIcon } from './components/icons'
 import { StepProgress, StepAmount, StepPlayerInfo, StepPayment, StepReceipt, StepComplete, SuccessScreen } from './components/steps'
+import CrowLogo from './assets/playcrows-icon.jpg'
 
 const INITIAL: FormData = {
   currency: 'USD',
@@ -28,7 +28,7 @@ export default function App() {
     <div className="min-h-screen bg-[#0d0f14] text-[#e8eaf0]">
       <header className="border-b border-[#191d27] bg-[#0d0f14] sticky top-0 z-50">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <CrowIcon />
+          <img src={CrowLogo} alt="PlayCrows logo" className="h-10 w-10 rounded-full object-cover" />
           <div>
             <div className="font-bold text-base text-[#e8eaf0] leading-tight tracking-tight">PLAYCROWS</div>
             <div className="text-[10px] text-[#6b7280] tracking-widest uppercase">by Hawk</div>
