@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { FormData } from '../../types'
 import { Btn, Card } from '../ui'
 import { UploadIcon, CheckIcon, DiscordIcon, TicketIcon } from '../icons'
+import { supabase } from '../../lib/supabase'
 
 export function StepReceipt({
   data,
@@ -16,6 +17,8 @@ export function StepReceipt({
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleFile = useCallback((file: File) => {
     const reader = new FileReader()
@@ -28,6 +31,48 @@ export function StepReceipt({
     setDragging(false)
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
+  }
+
+  const handleSubmit = async () => {
+    if (!data.receiptFile) return
+    setUploading(true)
+    setError(null)
+
+    try {
+      // 1. Upload the receipt file to Supabase Storage
+      const fileExt = data.receiptFile.name.split('.').pop()
+      const filePath = `${crypto.randomUUID()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(filePath, data.receiptFile)
+
+      if (uploadError) throw uploadError
+
+      // 2. Insert the donation record into the database
+      // NOTE: adjust the field names below (data.playerId, data.username, etc.)
+      // to match whatever your actual FormData type calls them.
+      const { error: insertError } = await supabase
+        .from('donations')
+        .insert({
+          player_id: data.playerId,
+          username: data.username,
+          payment_method: data.paymentMethod,
+          amount: data.amount,
+          receipt_path: filePath,
+          status: 'pending',
+        })
+
+      if (insertError) throw insertError
+
+      // 3. Move on to the summary step
+      onNext()
+    } catch (err) {
+      console.error(err)
+      setError('Something went wrong while submitting your receipt. Please try again.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -89,14 +134,18 @@ export function StepReceipt({
           When contacting, please include: <span className="text-[#e8eaf0]">Player ID · Username · Payment Method · Donation Amount · Receipt</span>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Btn variant="secondary" className="flex-1 min-w-[140px]"onClick={() => window.open("https://discord.com/channels/1527607490840100955/1527608168711061614", "_blank")}><DiscordIcon /> Contact Customer Support</Btn>
-          <Btn variant="ghost" className="flex-1 min-w-[140px]"onClick={() => window.open("https://discord.com/channels/1527607490840100955/1527609980625227866", "_blank")}><TicketIcon /> Create a Ticket</Btn>
+          <Btn variant="secondary" className="flex-1 min-w-[140px]" onClick={() => window.open("https://discord.com/channels/1527607490840100955/1527608168711061614", "_blank")}><DiscordIcon /> Contact Customer Support</Btn>
+          <Btn variant="ghost" className="flex-1 min-w-[140px]" onClick={() => window.open("https://discord.com/channels/1527607490840100955/1527609980625227866", "_blank")}><TicketIcon /> Create a Ticket</Btn>
         </div>
       </Card>
 
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
       <div className="flex items-center justify-between">
-        <Btn variant="ghost" onClick={onBack}>Back</Btn>
-        <Btn onClick={onNext} disabled={!data.receiptFile}>Continue to Summary</Btn>
+        <Btn variant="ghost" onClick={onBack} disabled={uploading}>Back</Btn>
+        <Btn onClick={handleSubmit} disabled={!data.receiptFile || uploading}>
+          {uploading ? 'Uploading...' : 'Continue to Summary'}
+        </Btn>
       </div>
     </div>
   )

@@ -10,3 +10,4 @@ export interface FormData {
   paymentMethod: PaymentMethod | null
   receiptFile: File | null
   receiptPreview: string | null
+}

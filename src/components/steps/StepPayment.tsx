@@ -1,9 +1,8 @@
-import { useState } from 'react'
 import type { FormData, PaymentMethod } from '../../types'
 import { PAYMENT_METHODS, PAYMENT_INFO, CURRENCY_META } from '../../constants'
 import { displayAmount } from '../../utils'
 import { Btn, Card } from '../ui'
-import { CopyIcon, CheckIcon, PayPalIcon, GCashIcon, WiseIcon } from '../icons'
+import { CheckIcon, PayPalIcon, GCashIcon, WiseIcon } from '../icons'
 import gcashQr from '../../assets/gcash-qr.jpg'
 
 function MethodIcon({ id, size = 36 }: { id: PaymentMethod; size?: number }) {
@@ -31,14 +30,6 @@ export function StepPayment({
   onNext: () => void
   onBack: () => void
 }) {
-  const [copied, setCopied] = useState(false)
-
-  const copy = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const amtDisplay = displayAmount(data)
   const curMeta = CURRENCY_META[data.currency] ?? CURRENCY_META.USD
 

@@ -8,10 +8,12 @@ export function StepComplete({
   data,
   onSubmit,
   onBack,
+  isSaving,
 }: {
   data: FormData
   onSubmit: () => void
   onBack: () => void
+  isSaving: boolean
 }) {
   const methodLabel = PAYMENT_METHODS.find(m => m.id === data.paymentMethod)?.label ?? ''
 
@@ -36,7 +38,9 @@ export function StepComplete({
       </Card>
       <div className="flex items-center justify-between">
         <Btn variant="ghost" onClick={onBack}>Back</Btn>
-        <Btn onClick={onSubmit}>Submit Payment Receipt</Btn>
+        <Btn onClick={onSubmit} disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Submit Payment Receipt'}
+        </Btn>
       </div>
     </div>
   )

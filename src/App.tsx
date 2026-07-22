@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react'
+import { supabase } from './lib/supabase'
 import type { FormData } from './types'
 import { StepProgress, StepAmount, StepPlayerInfo, StepPayment, StepReceipt, StepComplete, SuccessScreen } from './components/steps'
 import CrowLogo from './assets/playcrows-icon.jpg'
@@ -17,12 +18,41 @@ const INITIAL: FormData = {
 export default function App() {
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [form, setForm] = useState<FormData>(INITIAL)
 
   const update = (partial: Partial<FormData>) => setForm(f => ({ ...f, ...partial }))
   const next = () => setStep(s => s + 1)
   const back = () => setStep(s => s - 1)
   const reset = () => { setForm(INITIAL); setStep(1); setSubmitted(false) }
+
+  const handleSubmit = async () => {
+    if (isSaving) return
+    setIsSaving(true)
+
+    const amount = form.amount === 'custom' ? form.customAmount : form.amount
+    const donation = {
+      player_id: form.playerId,
+      username: form.username,
+      payment_method: form.paymentMethod,
+      currency: form.currency,
+      amount,
+      receipt_file_name: form.receiptFile?.name ?? null,
+      receipt_uploaded: !!form.receiptFile,
+      submitted_at: new Date().toISOString(),
+    }
+
+    const { error } = await supabase.from('donations').insert([donation])
+
+    setIsSaving(false)
+
+    if (error) {
+      alert(`Failed to save donation: ${error.message}`)
+      return
+    }
+
+    setSubmitted(true)
+  }
 
   return (
     <div className="min-h-screen bg-[#0d0f14] text-[#e8eaf0]">
@@ -46,7 +76,7 @@ export default function App() {
             {step === 2 && <StepPlayerInfo data={form} onUpdate={update} onNext={next} onBack={back} />}
             {step === 3 && <StepPayment data={form} onUpdate={update} onNext={next} onBack={back} />}
             {step === 4 && <StepReceipt data={form} onUpdate={update} onNext={next} onBack={back} />}
-            {step === 5 && <StepComplete data={form} onSubmit={() => setSubmitted(true)} onBack={back} />}
+            {step === 5 && <StepComplete data={form} onSubmit={handleSubmit} onBack={back} isSaving={isSaving} />}
           </>
         )}
       </main>

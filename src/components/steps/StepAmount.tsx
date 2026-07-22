@@ -1,7 +1,7 @@
 import type { FormData } from '../../types'
 import { PRESET_AMOUNTS_USD, CURRENCY_META } from '../../constants'
 import { convertAmount } from '../../utils'
-import { Btn, Card, Input } from '../ui'
+import { Btn } from '../ui'
 
 export function StepAmount({
   data,
