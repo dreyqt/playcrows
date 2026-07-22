@@ -121,10 +121,6 @@ export function StepPayment({
                   <span className="text-sm font-medium text-[#e8eaf0] font-mono">{PAYMENT_INFO.gcash.number}</span>
                 </div>
               </div>
-              <Btn variant="secondary" onClick={() => copy(PAYMENT_INFO.gcash.number)} className="w-full">
-                <CopyIcon />
-                {copied ? 'Copied!' : 'Copy GCash Number'}
-              </Btn>
             </>
           )}
 
@@ -148,9 +144,7 @@ export function StepPayment({
               <div className="flex flex-col gap-0 bg-[#13161e] rounded-xl overflow-hidden">
                 {[
                   ['Account Name', PAYMENT_INFO.wise.accountName],
-                  ['Email', PAYMENT_INFO.wise.email],
-                  ['Account Number', PAYMENT_INFO.wise.accountNumber],
-                  ['Currency', PAYMENT_INFO.wise.currency],
+                  ['Wisetag', PAYMENT_INFO.wise.email]
                 ].map(([label, val]) => (
                   <div key={label} className="flex justify-between items-center px-4 py-3 border-b border-[#252a38] last:border-0">
                     <span className="text-xs text-[#6b7280]">{label}</span>
@@ -158,10 +152,6 @@ export function StepPayment({
                   </div>
                 ))}
               </div>
-              <Btn variant="secondary" onClick={() => copy(`${PAYMENT_INFO.wise.accountName} | ${PAYMENT_INFO.wise.email} | ${PAYMENT_INFO.wise.accountNumber}`)} className="w-full">
-                <CopyIcon />
-                {copied ? 'Copied!' : 'Copy Payment Details'}
-              </Btn>
             </>
           )}
         </Card>
